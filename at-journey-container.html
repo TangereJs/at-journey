@@ -7,7 +7,7 @@
 <link rel="import" href="../at-core-signals/at-core-signals.html">
 <link rel="import" href="../at-core-dframe/at-core-dframe.html">
 <link rel="import" href="../at-core-activity/at-core-activity.html">
-
+<link rel="import" href="../at-carbon-icon-button/at-carbon-icon-button.html">
 <dom-module id="at-journey-container">
   <template>
     <style>
@@ -55,28 +55,36 @@
         text-align: center;
       }
 
-      .footer.fixed-bottom {
-        height: 32px;
-      }
+        .footer.fixed-bottom {
+          height: 32px;
+        }
 
       #dframeContainer {
-        z-index:5000;
+        z-index: 5000;
       }
 
+      #deviceSwitcher {
+        height: 200px;
+        width: 40px;
+      }
     </style>
     <div>
     </div>
-
     <at-core-signals on-journey-step="_journeyStep"></at-core-signals>
     <at-core-activity id="apiResetCardsForUser" url="/api/adenin.Now.Service/ResetCardsForUser" on-response="_cardsRefreshed"></at-core-activity>
     <div class="vertical layout">
       <div class="flex header">
-
       </div>
       <div id="mainContent" class="horizontal layout sim-content-container">
-        <div class="left-sidebar"></div>
+        <div class="left-sidebar">
+          <div class="vertical layout" id="deviceSwitcher">
+            <div title="Phone"><at-carbon-icon-button id="phone" icon="now:device-phone" on-tap="_selectDevice" color="blue"></at-carbon-icon-button></div>
+            <div title="Tablet"><at-carbon-icon-button id="tablet" icon="now:device-tablet" on-tap="_selectDevice" color="gray"></at-carbon-icon-button></div>
+            <div title="Laptop"><at-carbon-icon-button id="laptop" icon="now:device-laptop" on-tap="_selectDevice" color="gray"></at-carbon-icon-button></div>
+          </div>
+        </div>
         <div class="flex-10 horizontal layout center-content" id="dframeContainer">
-          <at-core-dframe id="deviceFrame" src="" on-load="_frameLoaded" device-type="iphone5s_silver"></at-core-dframe>
+          <at-core-dframe id="deviceFrame" src="" on-load="_frameLoaded" device-type="iphone6_silver"></at-core-dframe>
         </div>
         <div class="vertical layout right-sidebar">
           <div id="panel">
@@ -90,18 +98,49 @@
         </div>
       </div>
       <div class="footer fixed-bottom">
-
       </div>
     </div>
-
   </template>
 </dom-module>
 <script>
   Polymer({
     is: 'at-journey-container',
-    attached: function() {      
+    attached: function () {
       this._applyDimensions();
     },
+    _selectDevice: function (e) {
+
+      var deviceFrame = this.$.deviceFrame;
+
+      switch (e.currentTarget.id) {
+
+        case "tablet":
+          deviceFrame.deviceType = "ipad_silver";
+          deviceFrame.orientation = "landscape";
+          break;
+
+        case "laptop":
+          deviceFrame.deviceType = "macbook";
+          deviceFrame.orientation = "landscape";
+          break;
+
+        default:
+          deviceFrame.deviceType = "iphone6_silver";
+          deviceFrame.orientation = "portrait";
+          break;
+      }
+
+      this._setDeviceButtonState();
+    },
+
+    _setDeviceButtonState: function() {
+      var deviceType = this.$.deviceFrame.deviceType;
+ 
+      this.$.phone.color = deviceType == "iphone6_silver" ? "blue" : "gray";
+      this.$.tablet.color = deviceType == "ipad_silver" ? "blue" : "gray";
+      this.$.laptop.color = deviceType == "macbook" ? "blue" : "gray";
+    },
+
     _journeyStep: function (e) {
       var step = e.detail;
       this._step = step;
@@ -125,7 +164,7 @@
         this._journeyUpdate(false);
       }
     },
-    _cardsRefreshed: function(e) {
+    _cardsRefreshed: function (e) {
       if (this._step.cardsRefresh.indexOf("-") == 0) {
         // if all cards are cleared we delayed url refresh until card refresh is finished
         this._journeyUpdate(true);
@@ -137,7 +176,7 @@
       var delay = 1000;
 
       if (!dframe.src) delay = 5000;  // wait longer for initial load
-      this._delay = delay;       
+      this._delay = delay;
 
       var url = step.url;
 
@@ -148,9 +187,10 @@
 
       if (step.orientation) dframe.orientation = step.orientation;
       if (step.deviceType) dframe.deviceType = step.deviceType;
+      this._setDeviceButtonState();
       this._applyDimensions();
 
-      // when we have an micro app url and an existing view and we are not forced to reload 
+      // when we have an micro app url and an existing view and we are not forced to reload
       // then we can just change the hash
       if (url.indexOf("#") == 0 && dframe.src && !reload) {
         dframe.setHash(url);
@@ -170,8 +210,8 @@
       }
     },
 
-    _frameLoaded: function(e) {
-      
+    _frameLoaded: function (e) {
+
       if (this._step.typeWrite) {
         this._pendingTypeWrite = this.async(function () {
           this._pendingTypeWrite = null;
@@ -193,31 +233,7 @@
 
     ready: function () {
 
-
-      var deviceFrame = document.getElementById('deviceFrame');
-
-      // *todo* add device switcher
-      //var deviceSwitcher = document.getElementById('deviceSwitcher');
-
-      //deviceSwitcher.addEventListener('click', function (event) {
-      //  var target = event.target;
-      //  if (!target.classList.contains('device-button')) { return; }
-
-      //  var activeDeviceButton = document.querySelector(".device-button.active");
-      //  activeDeviceButton.classList.remove('active');
-
-      //  target.classList.add('active');
-
-      //  var title = target.title;
-      //  if (title === "Phone") {
-      //    deviceFrame.deviceType = "iphone5s_silver";
-      //    deviceFrame.orientation = "portrait";
-      //  } else {
-      //    deviceFrame.deviceType = "ipad_silver";
-      //    deviceFrame.orientation = "landscape";
-      //  }
-      //});
-
+      this._setDeviceButtonState();
 
       function applyDimensions() {
 
@@ -238,8 +254,8 @@
         var availableWidth = window.innerWidth - leftSidebarWidth - rightSidebarWidth;
         var availableHeight = window.innerHeight - headerHeight - footerHeight;
 
-        Polymer.dom(simContentContainerDiv).node.style.height = availableHeight+"px";
-        
+        Polymer.dom(simContentContainerDiv).node.style.height = availableHeight + "px";
+
         deviceFrame._applyMaxWidthHeight(availableWidth, availableHeight);
         deviceFrame.maxWidth = availableWidth;
         deviceFrame.maxHeight = availableHeight;
@@ -247,7 +263,7 @@
 
       this._applyDimensions = applyDimensions;
       applyDimensions();
-      
+
       window.addEventListener('resize', function () {
         applyDimensions();
       });
@@ -285,4 +301,3 @@
 
   });
 </script>
-
