@@ -1,0 +1,8 @@
+{
+  "name": "at-journey",
+  "version": "0.0.1.110",
+  "private": true,
+  "dependencies": {
+    "polymer": "Polymer/polymer#master"
+  }
+}

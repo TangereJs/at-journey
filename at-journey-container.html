@@ -1,0 +1,288 @@
+<link rel="import" href="../tangere/tangere.html">
+<link rel="import" href="at-journey-scaffold.html">
+<link rel="import" href="../at-core-router/at-core-router.html">
+<link rel="import" href="../at-app-session/at-app-session.html">
+<link rel="import" href="../at-core-style-classes/at-core-style-classes.html">
+<link rel="import" href="../at-theme/at-theme.html">
+<link rel="import" href="../at-core-signals/at-core-signals.html">
+<link rel="import" href="../at-core-dframe/at-core-dframe.html">
+<link rel="import" href="../at-core-activity/at-core-activity.html">
+
+<dom-module id="at-journey-container">
+  <template>
+    <style>
+      :host {
+        width: 100%;
+        box-sizing: border-box;
+        display: block;
+      }
+
+      #panel {
+        width: 300px;
+        position: relative;
+        top: 0;
+        right: 0;
+      }
+
+      .header {
+        text-align: center;
+        height: 32px;
+        min-height: 32px;
+        max-height: 32px;
+      }
+
+      .sim-content-container {
+        margin-bottom: 32px;
+      }
+
+      .left-sidebar {
+        margin: 8px;
+      }
+
+      .center-content {
+        justify-content: center;
+        align-items: center;
+      }
+
+      .right-sidebar {
+        margin: 8px;
+        margin-left: 24px;
+        align-items: center;
+        min-width: 100px;
+      }
+
+      .footer {
+        text-align: center;
+      }
+
+      .footer.fixed-bottom {
+        height: 32px;
+      }
+
+      #dframeContainer {
+        z-index:5000;
+      }
+
+    </style>
+    <div>
+    </div>
+
+    <at-core-signals on-journey-step="_journeyStep"></at-core-signals>
+    <at-core-activity id="apiResetCardsForUser" url="/api/adenin.Now.Service/ResetCardsForUser" on-response="_cardsRefreshed"></at-core-activity>
+    <div class="vertical layout">
+      <div class="flex header">
+
+      </div>
+      <div id="mainContent" class="horizontal layout sim-content-container">
+        <div class="left-sidebar"></div>
+        <div class="flex-10 horizontal layout center-content" id="dframeContainer">
+          <at-core-dframe id="deviceFrame" src="" on-load="_frameLoaded" device-type="iphone5s_silver"></at-core-dframe>
+        </div>
+        <div class="vertical layout right-sidebar">
+          <div id="panel">
+            <at-journey-scaffold caption="">
+              <div class="main">
+                <at-core-router id="router" caption="Journey" default-view="at-journey/at-journey-empty"></at-core-router>
+              </div>
+            </at-journey-scaffold>
+            <at-app-session></at-app-session>
+          </div>
+        </div>
+      </div>
+      <div class="footer fixed-bottom">
+
+      </div>
+    </div>
+
+  </template>
+</dom-module>
+<script>
+  Polymer({
+    is: 'at-journey-container',
+    attached: function() {      
+      this._applyDimensions();
+    },
+    _journeyStep: function (e) {
+      var step = e.detail;
+      this._step = step;
+
+      if (step.cardsRefresh) {
+        this.$.apiResetCardsForUser.method = "POST";
+        this.$.apiResetCardsForUser.params = {
+          cards: step.cardsRefresh
+        };
+
+        this.$.apiResetCardsForUser.generateRequest();
+
+        if (step.cardsRefresh.indexOf("-") != 0) {
+          // if not all cards are cleared we can process url immediately
+          this._journeyUpdate(false);
+        }
+
+      } else {
+
+        // without card refresh process url immediately
+        this._journeyUpdate(false);
+      }
+    },
+    _cardsRefreshed: function(e) {
+      if (this._step.cardsRefresh.indexOf("-") == 0) {
+        // if all cards are cleared we delayed url refresh until card refresh is finished
+        this._journeyUpdate(true);
+      }
+    },
+    _journeyUpdate: function (reload) {
+      var step = this._step;
+      var dframe = this.$.deviceFrame;
+      var delay = 1000;
+
+      if (!dframe.src) delay = 5000;  // wait longer for initial load
+      this._delay = delay;       
+
+      var url = step.url;
+
+      if (this._pendingTypeWrite) {
+        this.cancelAsync();
+        this._pendingTypeWrite = null;
+      }
+
+      if (step.orientation) dframe.orientation = step.orientation;
+      if (step.deviceType) dframe.deviceType = step.deviceType;
+      this._applyDimensions();
+
+      // when we have an micro app url and an existing view and we are not forced to reload 
+      // then we can just change the hash
+      if (url.indexOf("#") == 0 && dframe.src && !reload) {
+        dframe.setHash(url);
+        if (this._step.typeWrite) this._frameLoaded();
+      }
+
+      if (url.indexOf("/") != 0) {
+        url = "/App" + url;
+      }
+
+      if (dframe.src == url && reload) {
+        dframe.reload();
+      }
+
+      if (dframe.src != url) {
+        dframe.src = url;
+      }
+    },
+
+    _frameLoaded: function(e) {
+      
+      if (this._step.typeWrite) {
+        this._pendingTypeWrite = this.async(function () {
+          this._pendingTypeWrite = null;
+
+          var url = this.$.deviceFrame.src;
+          var p = 0;
+          var sep = "?";
+
+          if (url.indexOf("#")) p = url.indexOf("#");
+
+          if (url.substring(p).indexOf("?") > 0) sep = "&";
+
+          this.$.deviceFrame.src = url + sep + "typeWrite=" + this._step.typeWrite;
+
+
+        }, this._delay);
+      }
+    },
+
+    ready: function () {
+
+
+      var deviceFrame = document.getElementById('deviceFrame');
+
+      // *todo* add device switcher
+      //var deviceSwitcher = document.getElementById('deviceSwitcher');
+
+      //deviceSwitcher.addEventListener('click', function (event) {
+      //  var target = event.target;
+      //  if (!target.classList.contains('device-button')) { return; }
+
+      //  var activeDeviceButton = document.querySelector(".device-button.active");
+      //  activeDeviceButton.classList.remove('active');
+
+      //  target.classList.add('active');
+
+      //  var title = target.title;
+      //  if (title === "Phone") {
+      //    deviceFrame.deviceType = "iphone5s_silver";
+      //    deviceFrame.orientation = "portrait";
+      //  } else {
+      //    deviceFrame.deviceType = "ipad_silver";
+      //    deviceFrame.orientation = "landscape";
+      //  }
+      //});
+
+
+      function applyDimensions() {
+
+        var dframeContainer = document.getElementById('dframeContainer');
+
+        var headerDiv = document.querySelector('.header');
+        var footerDiv = document.querySelector('.footer');
+        var leftSidebarDiv = document.querySelector('.left-sidebar');
+        var rightSidebarDiv = document.querySelector('.right-sidebar');
+
+        var simContentContainerDiv = document.querySelector('.sim-content-container');
+
+        var headerHeight = getCompleteHeight(headerDiv);
+        var footerHeight = getCompleteHeight(footerDiv);
+        var leftSidebarWidth = getCompleteWidth(leftSidebarDiv);
+        var rightSidebarWidth = getCompleteWidth(rightSidebarDiv);
+
+        var availableWidth = window.innerWidth - leftSidebarWidth - rightSidebarWidth;
+        var availableHeight = window.innerHeight - headerHeight - footerHeight;
+
+        Polymer.dom(simContentContainerDiv).node.style.height = availableHeight+"px";
+        
+        deviceFrame._applyMaxWidthHeight(availableWidth, availableHeight);
+        deviceFrame.maxWidth = availableWidth;
+        deviceFrame.maxHeight = availableHeight;
+      }
+
+      this._applyDimensions = applyDimensions;
+      applyDimensions();
+      
+      window.addEventListener('resize', function () {
+        applyDimensions();
+      });
+
+      function getCompleteWidth(element) {
+        var boundingWidth = element.getBoundingClientRect().width;
+        var offsetWidth = element.offsetWidth;
+        var width = boundingWidth > offsetWidth ? boundingWidth : offsetWidth;
+
+        var computedStyle = window.getComputedStyle(element);
+        var leftMarginStr = computedStyle.getPropertyValue('margin-left');
+        var rightMarginStr = computedStyle.getPropertyValue('margin-right');
+        var leftMargin = parseInt(leftMarginStr);
+        var rightMargin = parseInt(rightMarginStr);
+
+        return width + leftMargin + rightMargin;
+      }
+
+      function getCompleteHeight(element) {
+        var boundingHeight = element.getBoundingClientRect().height;
+        var offsetHeight = element.offsetHeight;
+        var height = boundingHeight > offsetHeight ? boundingHeight : offsetHeight;
+
+        var computedStyle = window.getComputedStyle(element);
+        var topMarginStr = computedStyle.getPropertyValue('margin-top');
+        var bottomMarginStr = computedStyle.getPropertyValue('margin-bottom');
+        var topMargin = parseInt(topMarginStr);
+        var bottomMargin = parseInt(bottomMarginStr);
+
+        return height + topMargin + bottomMargin;
+      }
+
+
+    }
+
+  });
+</script>
+

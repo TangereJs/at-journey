@@ -1,0 +1,155 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../layout/layout.html">
+<link rel="import" href="../at-core-media-query/at-core-media-query.html">
+<link rel="import" href="../at-core-signals/at-core-signals.html">
+<link rel="import" href="../at-core-busy/at-core-busy.html">
+<link rel="import" href="../at-carbon-icon/at-carbon-icon.html">
+<link rel="import" href="../at-core-theme/at-core-theme.html">
+
+<dom-module id="at-journey-scaffold">
+
+  <template>
+    <style>
+      #hamburger {
+        display: inline-block;
+      }
+
+      .mainwrapper {
+        padding-top: 80px;
+      }
+
+      #menu {
+        cursor: pointer;
+        width: 24px;
+      }
+
+      #back {
+        cursor: pointer;
+        margin-right: 16px;
+      }
+
+
+        #back at-carbon-icon {
+          cursor: pointer;
+          width: 32px;
+          height: 32px;
+          border: 1px solid;
+          border-radius: 24px;
+          margin-top: 7px;
+        }
+
+      .bar {
+        width: 100%;
+        padding: 8px !important;
+        height: 80px;
+        z-index: 100;
+        top: 0;
+        left: 0;
+        position: absolute;
+      }
+
+        .bar a {
+          text-decoration: none;
+        }
+
+      at-core-busy {
+        width: 60px;
+      }
+
+      .internalheader1 {
+        @apply(--paper-font-headline);
+      }
+
+      @media (max-width: 500px) {
+        .bar {
+          padding: 0px 8px 0px 14px !important;
+          height: 60px;
+        }
+
+        .internalheader1: {
+          margin-top: 16px;
+        }
+
+        .mainwrapper {
+          padding-top: 60px;
+        }
+      }
+    </style>
+
+    <at-core-theme></at-core-theme>
+    <at-core-signals on-before-navigate="beforeNavigate" on-navigate-back-status="navigateBackStatus" on-app-caption="appCaption"></at-core-signals>
+    <at-core-media-query id="mq" query="min-width: 1025px" on-query-matches-changed="mqChanged"></at-core-media-query>
+    <div id="bar" class="bar layout horizontal center">
+      <div class="layout horizontal center" id="back" on-tap="backClick">
+        <at-carbon-icon icon="now:arrow-left"></at-carbon-icon>
+      </div>
+      <div class="layout horizontal flex">
+        <header id="internalheader">
+          <div class="layout vertical center"><h1 class="internalheader1">{{caption}}</h1></div>
+        </header>
+      </div>
+      <div id="busy">
+        <div class="layout vertical center ">
+          <at-core-busy type="wave"></at-core-busy>
+        </div>
+      </div>
+      <!--<div id="menu" on-tap="menuClick" class="layout horizontal">
+        <at-carbon-icon icon="now:menu"></at-carbon-icon>
+      </div>-->
+    </div>
+    <div id="mainwrapper" class="mainwrapper" on-router-navigate="routerNavigate">
+      <content select=".main"></content>
+    </div>
+  </template>
+</dom-module>
+
+<script>
+  Polymer({
+    is: 'at-journey-scaffold',  
+    properties: {
+      caption: {
+        type: String,
+        value: '',
+        notify: true
+      }
+    },
+
+    mqChanged: function () {
+
+    },
+
+    backClick: function () {
+      window.history.back();
+    },
+    navigateBackStatus: function (e) {
+      // this.$.back.style.display = e.detail ? "block" : "none"
+      this.$.back.style.display = "none";
+    },
+    menuClick: function () {
+      this.sidebar = !this.sidebar;
+    },
+    beforeNavigate: function (e) {
+
+    },
+
+    appCaption: function (e) {
+      this.caption = e.detail;
+      document.title = this.caption;
+
+      // hide loading animation, *todo* consider moving logic back to at-app-session to keep show/hide of animation in one element
+      if (!this._firstViewShown) {
+        var splash = document.getElementById("splash");
+        splash.classList.add("hide");
+        this._firstViewShown = true;
+      }
+    },
+    attached: function () {
+      this.removeAttribute('unresolved');
+    },
+    ready: function () {
+      console.log("at-app-embed-scaffold ready");
+      this.router = Polymer.dom(this).querySelector("#router");      
+    }
+  });
+</script>
+

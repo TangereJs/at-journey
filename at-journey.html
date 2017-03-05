@@ -1,0 +1,158 @@
+<link rel="import" href="../tangere/tangere.html">
+<link rel="import" href="../at-core-view/at-core-view.html">
+<link rel="import" href="../at-core-item/at-core-item.html">
+<dom-module id="at-journey">
+  <style>
+    :host {
+      position: relative;
+      width: 100%;
+      display: block;
+    }
+  </style>
+  <template>
+    <at-core-item id="item" item-component="{{itemComponent}}" view="{{view}}"></at-core-item>
+  </template>
+</dom-module>
+<script>
+  Polymer({
+    is: "at-journey",
+    properties: {
+      itemComponent: {
+        type: String,
+        value: "",
+        notify: true
+      },
+      view: {
+        type: String,
+        value: "",
+        notify: true,
+        xtype: "code",
+        mode: "liquid"
+      },
+      cardsRefresh: {
+        type: String,
+        value: "",
+        notify: true
+      },
+      url: {
+        type: String,
+        value: "#!at-now/start-now",
+        notify: true
+      },
+      typeWrite: {
+        type: String,
+        value: "",
+        notify: true
+      },
+      deviceType: {
+        type: String,
+        value: "",
+        xtype: "enum",
+        xvaluelist: [
+          {
+            title: "",
+            value: ""
+          },
+          {
+            title: "iPhone 5S White",
+            value: "iphone5s_silver",
+            width: 368,
+            height: 782
+          },
+          {
+            title: "iPhone 6 Black",
+            value: "iphone6_black",
+            width: 431,
+            height: 877
+          },
+          {
+            title: "iPhone 6 White",
+            value: "iphone6_silver",
+            width: 431,
+            height: 877
+          },
+          {
+            title: "iPad Mini White",
+            value: "ipad_silver",
+            width: 626,
+            height: 948
+          },
+          {
+            title: "Nexus 5",
+            value: "nexus5",
+            width: 358,
+            height: 708
+          },
+          {
+            title: "MacBookPro",
+            value: "macbook",
+            width: 1188,
+            height: 720
+          }
+        ]
+      },
+
+      orientation: {
+        type: String,
+        value: "",
+        xtype: 'enum',
+        xvaluelist: [
+          {
+            title: "",
+            value: ""
+          },
+          {
+            title: "Portrait",
+            value: "portrait"
+          },
+          {
+            title: "Landscape",
+            value: "landscape"
+          }
+        ]
+      },
+    },
+    $meta: [{
+      title: "Journey Step",
+      type: "element",
+      xtype: "at-journey",
+      events: [],
+      stateProperties: [""],
+      icon: "now:plane"
+    }],
+    observers: [
+      'start(itemComponent, view, url, cardsRefresh, typeWrite)'
+    ],
+
+    start: function () {
+
+      this.debounce('at-journey-step-start', function () {
+
+        if (this.view) {
+          this.$.item.itemComponent = "";
+          this.$.item.view = this.view;
+        } else {
+          this.$.item.view = "";
+          this.$.item.itemComponent = this.itemComponent;
+        }
+
+        this.$.item.clear();
+        this.$.item.value = {};
+
+        var step = {
+          url: this.url,
+          cardsRefresh: this.cardsRefresh,
+          typeWrite: this.typeWrite,
+          deviceType: this.deviceType,
+          orientation: this.orientation
+        };
+
+        Polymer.signal("journey-step", step)
+
+      }, 100);
+    },
+    ready: function () {
+
+    }
+  });
+</script>

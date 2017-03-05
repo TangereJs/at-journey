@@ -1,0 +1,24 @@
+<link rel="import" href="../at-carbon-empty-state/at-carbon-empty-state.html">
+
+<dom-module id="at-journey-empty">
+  <template>    
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+
+   <at-carbon-empty-state icon="now:plane">
+     No user journey selected. Please provide a journey name in the url like<br />.../Journey<b>!#my-journey/my-journey-step1</b>
+   </at-carbon-empty-state>
+  </template>
+</dom-module>
+
+<script>
+  Polymer({
+    is: 'at-journey-empty',
+    attached: function () {
+      Polymer.signal("app-caption", "No journey selected");
+    }
+  });
+</script>
