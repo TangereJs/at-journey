@@ -3,7 +3,6 @@
 <link rel="import" href="../at-core-router/at-core-router.html">
 <link rel="import" href="../at-app-session/at-app-session.html">
 <link rel="import" href="../at-core-style-classes/at-core-style-classes.html">
-<link rel="import" href="../at-theme/at-theme.html">
 <link rel="import" href="../at-core-signals/at-core-signals.html">
 <link rel="import" href="../at-core-dframe/at-core-dframe.html">
 <link rel="import" href="../at-core-activity/at-core-activity.html">
@@ -68,25 +67,23 @@
         width: 40px;
       }
     </style>
-    <div>
-    </div>
     <at-core-signals on-journey-step="_journeyStep"></at-core-signals>
     <at-core-activity id="apiResetCardsForUser" url="/api/adenin.Now.Service/ResetCardsForUser" on-response="_cardsRefreshed"></at-core-activity>
-    <div class="vertical layout">
-      <div class="flex header">
+    <div class="layout-vertical">
+      <div class="layout-flex header">
       </div>
-      <div id="mainContent" class="horizontal layout sim-content-container">
+      <div id="mainContent" class="layout-horizontal sim-content-container">
         <div class="left-sidebar">
-          <div class="vertical layout" id="deviceSwitcher">
+          <div class="layout-vertical" id="deviceSwitcher">
             <div title="Phone"><at-carbon-icon-button id="phone" icon="now:device-phone" on-tap="_selectDevice" color="blue"></at-carbon-icon-button></div>
             <div title="Tablet"><at-carbon-icon-button id="tablet" icon="now:device-tablet" on-tap="_selectDevice" color="gray"></at-carbon-icon-button></div>
             <div title="Laptop"><at-carbon-icon-button id="laptop" icon="now:device-laptop" on-tap="_selectDevice" color="gray"></at-carbon-icon-button></div>
           </div>
         </div>
-        <div class="flex-10 horizontal layout center-content" id="dframeContainer">
+        <div class="layout-flex-10 layout-horizontal center-content" id="dframeContainer">
           <at-core-dframe id="deviceFrame" src="" on-load="_frameLoaded" device-type="iphone6_silver"></at-core-dframe>
         </div>
-        <div class="vertical layout right-sidebar">
+        <div class="layout-vertical right-sidebar">
           <div id="panel">
             <at-journey-scaffold caption="">
               <div class="main">
@@ -97,8 +94,7 @@
           </div>
         </div>
       </div>
-      <div class="footer fixed-bottom">
-      </div>
+      <div class="footer fixed-bottom"></div>
     </div>
   </template>
 </dom-module>
@@ -135,7 +131,7 @@
 
     _setDeviceButtonState: function() {
       var deviceType = this.$.deviceFrame.deviceType;
- 
+
       this.$.phone.color = deviceType == "iphone6_silver" ? "blue" : "gray";
       this.$.tablet.color = deviceType == "ipad_silver" ? "blue" : "gray";
       this.$.laptop.color = deviceType == "macbook" ? "blue" : "gray";

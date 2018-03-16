@@ -1,15 +1,13 @@
-<link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../layout/layout.html">
+<link rel="import" href="../tangere/tangere.html" />
 <link rel="import" href="../at-core-media-query/at-core-media-query.html">
 <link rel="import" href="../at-core-signals/at-core-signals.html">
 <link rel="import" href="../at-core-busy/at-core-busy.html">
 <link rel="import" href="../at-carbon-icon/at-carbon-icon.html">
-<link rel="import" href="../at-core-theme/at-core-theme.html">
+<link rel="import" href="../at-core-style-classes/at-core-style-classes.html" />
 
 <dom-module id="at-journey-scaffold">
-
   <template>
-    <style>
+    <style include="at-core-style-classes">
       #hamburger {
         display: inline-block;
       }
@@ -76,24 +74,23 @@
       }
     </style>
 
-    <at-core-theme></at-core-theme>
     <at-core-signals on-before-navigate="beforeNavigate" on-navigate-back-status="navigateBackStatus" on-app-caption="appCaption"></at-core-signals>
     <at-core-media-query id="mq" query="min-width: 1025px" on-query-matches-changed="mqChanged"></at-core-media-query>
-    <div id="bar" class="bar layout horizontal center">
-      <div class="layout horizontal center" id="back" on-tap="backClick">
+    <div id="bar" class="bar layout-horizontal layout-center">
+      <div class="layout-horizontal layout-center" id="back" on-tap="backClick">
         <at-carbon-icon icon="now:arrow-left"></at-carbon-icon>
       </div>
-      <div class="layout horizontal flex">
+      <div class="layout-horizontal layout-flex">
         <header id="internalheader">
-          <div class="layout vertical center"><h1 class="internalheader1">{{caption}}</h1></div>
+          <div class="layout-vertical layout-center"><h1 class="internalheader1">{{caption}}</h1></div>
         </header>
       </div>
       <div id="busy">
-        <div class="layout vertical center ">
+        <div class="layout-vertical layout-center">
           <at-core-busy type="wave"></at-core-busy>
         </div>
       </div>
-      <!--<div id="menu" on-tap="menuClick" class="layout horizontal">
+      <!--<div id="menu" on-tap="menuClick" class="layout-horizontal">
         <at-carbon-icon icon="now:menu"></at-carbon-icon>
       </div>-->
     </div>
@@ -105,7 +102,7 @@
 
 <script>
   Polymer({
-    is: 'at-journey-scaffold',  
+    is: 'at-journey-scaffold',
     properties: {
       caption: {
         type: String,
@@ -148,7 +145,7 @@
     },
     ready: function () {
       console.log("at-app-embed-scaffold ready");
-      this.router = Polymer.dom(this).querySelector("#router");      
+      this.router = Polymer.dom(this).querySelector("#router");
     }
   });
 </script>
